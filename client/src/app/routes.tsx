@@ -12,7 +12,9 @@ import useTableOfContents from "../hooks/useTableOfContents";
 import { useSiteConfig } from "../hooks/useSiteConfig";
 import { CallbackPage } from "../page/callback";
 import { CompatTasksPage } from "../page/compat-tasks";
+import { DashboardPage } from "../page/newAdmin/Dashboard/index";
 import { ErrorPage } from "../page/error";
+import { AntdProvider } from "../components/ui/antd-provider";
 import { FeedPage, TOCHeader } from "../page/feed";
 import { FeedsPage } from "../page/feeds";
 import { FriendsPage } from "../page/friends";
@@ -30,6 +32,32 @@ import { WritingPage } from "../page/writing";
 import { ProfileContext } from "../state/profile";
 import { tryInt } from "../utils/int";
 import { useTranslation } from "react-i18next";
+
+// 新增：Ant Design 独立路由组件
+function AntdRoute({
+  path,
+  children,
+  requirePermission,
+}: {
+  path: PathPattern;
+  children: ReactNode | ((params: DefaultParams) => ReactNode);
+  requirePermission?: boolean;
+}) {
+  const profile = useContext(ProfileContext);
+  const { t } = useTranslation();
+  const content =
+    requirePermission && !profile?.permission ? <ErrorPage error={t("error.permission_denied")} /> : children;
+
+  return (
+    <Route path={path}>
+      {(params) => (
+        <AntdProvider>
+          {typeof content === "function" ? content(params) : content}
+        </AntdProvider>
+      )}
+    </Route>
+  );
+}
 
 export function AppRoutes() {
   const { t } = useTranslation();
@@ -67,6 +95,10 @@ export function AppRoutes() {
       <AdminRoute path="/admin/settings" requirePermission title={t("settings.title")} description={t("admin.settings_description")}>
         <Settings />
       </AdminRoute>
+
+      <AntdRoute path="/admin/dashboard" requirePermission>
+        <DashboardPage />
+      </AntdRoute>
 
       <AdminRoute path="/admin/health" requirePermission title={t("health.title")} description={t("admin.health_description")}>
         <HealthPage />

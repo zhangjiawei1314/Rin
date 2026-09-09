@@ -10,7 +10,8 @@
     "queue_status_description": "Inspect AI summary queue progress, recent task results, and failures.",
     "settings_description": "Manage site behavior, integrations, and publishing rules in one place.",
     "title": "Admin",
-    "writing_description": "Write, edit, and publish content from the private management workspace."
+    "writing_description": "Write, edit, and publish content from the private management workspace.",
+    "title_new": "Admin (New)"
   },
   "compat_tasks": {
     "title": "Compatibility Tasks",
@@ -754,5 +755,36 @@
   "sort_latest": "Latest",
   "sort_popular": "Popular",
   "total_tags": "Total {{count}} tags",
-  "anonymous": "Anonymous"
+  "anonymous": "Anonymous",
+  "antd": {
+    "menu": {
+      "dashboard": "Dashboard",
+      "content": "Content Management",
+      "writing": "Article Management",
+      "tags": "Tag Management",
+      "settings": "System Settings",
+      "profile": "Profile",
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Data Overview & Management"
+    },
+    "table": {
+      "title": "Title",
+      "status": "Status",
+      "published": "Published",
+      "draft": "Draft",
+      "views": "Views",
+      "created_at": "Created At",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "recent_articles": "Recent Articles",
+      "refresh": "Refresh",
+      "new_article": "New Article",
+      "export": "Export Data"
+    },
+    "welcome": "Welcome back"
+  }
 }

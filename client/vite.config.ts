@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { visualizer } from "rollup-plugin-visualizer";
+import imp from "vite-plugin-imp";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -8,7 +9,7 @@ export default defineConfig(({ mode }) => {
   const serverPort = Number(process.env.RIN_SERVER_PORT || "11499");
   const serverTarget = `http://127.0.0.1:${serverPort}`;
   const cacheDir = process.env.RIN_VITE_CACHE_DIR || "../.vite/client";
-  
+
   return {
     cacheDir,
     // Note: Client configuration is fetched from server at runtime
@@ -19,6 +20,19 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      imp({
+        libList: [
+          {
+            libName: 'antd',
+            style: (name) => `antd/es/${name}/style/index.css`,
+          },
+          {
+            libName: '@ant-design/icons',
+            libDirectory: 'es/icons',
+            camel2DashComponentName: false,
+          },
+        ],
+      }) as any,
       // Only open visualizer in build mode
       visualizer({ open: !isDev })
     ],

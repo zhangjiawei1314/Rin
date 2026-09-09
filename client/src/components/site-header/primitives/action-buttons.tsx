@@ -201,16 +201,28 @@ export function UserAvatar({
               </div>
             </button>
             {profile.permission ? (
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  setLocation("/admin/writing");
-                }}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm t-primary transition-colors hover:bg-black/5 dark:hover:bg-white/10"
-              >
-                <i className="ri-dashboard-line" />
-                <span>{t("admin.title")}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocation("/admin/writing");
+                  }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm t-primary transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  <i className="ri-dashboard-line" />
+                  <span>{t("admin.title")}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    setLocation("/admin/dashboard");
+                  }}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm t-primary transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                >
+                  <i className="ri-layout-masonry-line" />
+                  <span>{t("admin.title_new")}</span>
+                </button>
+              </>
             ) : null}
             <button
               onClick={async () => {
