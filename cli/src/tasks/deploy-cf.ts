@@ -27,6 +27,7 @@ const WORKER_SECRET_KEYS = [
   "RIN_GITHUB_CLIENT_SECRET",
   "S3_ACCESS_KEY_ID",
   "S3_SECRET_ACCESS_KEY",
+  "IMGBB_API_KEY",
 ] as const;
 
 function isQueueAlreadyPresentError(stderr: string) {
@@ -211,6 +212,7 @@ export async function runCloudflareDeploy(target: "all" | "server" | "client" = 
       S3_ACCESS_HOST = "${finalS3AccessHost}"
       S3_BUCKET = "${finalS3Bucket}"
       S3_FORCE_PATH_STYLE = "${s3ForcePathStyle}"
+      STORAGE_PROVIDER = "${env("STORAGE_PROVIDER", "")}"
       WEBHOOK_URL = "${webhookUrl}"
       RSS_TITLE = "${rssTitle}"
       RSS_DESCRIPTION = "${rssDescription}"

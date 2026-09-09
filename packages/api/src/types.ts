@@ -20,6 +20,7 @@ export interface RequestOptions {
 // ============================================================================
 
 export interface Feed {
+  summary?: string;
   id: number;
   title: string | null;
   content: string;

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Card, Row, Col, Statistic, Button, Table, Tag, Space } from 'antd'
-import { ArrowUpOutlined, PlusOutlined, EditOutlined, ReloadOutlined } from '@ant-design/icons'
+import { ArrowUpOutlined, PlusOutlined, EditOutlined, ReloadOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet'
 import { AntdAdminLayout } from "../../../components/ui/admin-layout";
+import { Link } from 'wouter'
 
 export function DashboardPage() {
   const { t } = useTranslation()
@@ -107,9 +108,11 @@ export function DashboardPage() {
 
           {/* 操作按钮 */}
           <Space>
-            <Button type="primary" icon={<PlusOutlined />}>
-              {t('antd.table.new_article', '新建文章')}
-            </Button>
+            <Link to="/admin/feed/edit">
+              <Button type="primary" icon={<PlusCircleOutlined />}>
+                新建文章
+              </Button>
+            </Link>
             <Button>
               {t('antd.table.export', '导出数据')}
             </Button>

@@ -37,7 +37,7 @@ export function AntdAdminLayout({ children }: AntdAdminLayoutProps) {
       label: t('antd.menu.content', '内容管理'),
       children: [
         {
-          key: '/admin/writing',
+          key: '/admin/feed',
           label: t('antd.menu.writing', '文章管理'),
         },
         {

@@ -235,23 +235,42 @@ describe('StorageService', () => {
             expect(payload.url).toMatch(/^http:\/\/localhost\/api\/blob\/images\/[a-f0-9]+\.txt$/);
         });
 
-        it('should return 500 when S3_ENDPOINT is not defined without R2 binding', async () => {
+        it('should fall back to imgbb when S3_ENDPOINT is not defined without R2 binding', async () => {
             const envNoS3 = createMockEnv({
                 S3_ENDPOINT: '' as any,
+                IMGBB_API_KEY: 'test-imgbb-key',
             });
             const appNoS3 = createAppWithEnv(envNoS3, 1);
 
             const formData = new FormData();
-            formData.append('key', 'test.txt');
-            formData.append('file', new File(['test content'], 'test.txt', { type: 'text/plain' }));
-            
-            const res = await appNoS3.request('/', {
-                method: 'POST',
-                body: formData,
-            }, envNoS3);
+            formData.append('key', 'test.png');
+            formData.append('file', new File(['test content'], 'test.png', { type: 'image/png' }));
 
-            expect(res.status).toBe(500);
-            expect(await res.text()).toBe('S3_ENDPOINT is not defined');
+            // Mock imgbb upload to avoid a real network call
+            const originalFetch = globalThis.fetch;
+            globalThis.fetch = (async (_input: any, _init?: any) => {
+                return new Response(
+                    JSON.stringify({
+                        success: true,
+                        status: 200,
+                        data: { url: 'https://i.ibb.co/test.png' },
+                    }),
+                    { status: 200, headers: { 'Content-Type': 'application/json' } },
+                );
+            }) as typeof fetch;
+
+            try {
+                const res = await appNoS3.request('/', {
+                    method: 'POST',
+                    body: formData,
+                }, envNoS3);
+
+                expect(res.status).toBe(200);
+                const payload = await res.json() as { url: string };
+                expect(payload.url).toBe('https://i.ibb.co/test.png');
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
         });
 
         it('should return error when S3_ACCESS_KEY_ID is not defined without R2 binding', async () => {

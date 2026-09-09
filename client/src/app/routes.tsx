@@ -13,6 +13,8 @@ import { useSiteConfig } from "../hooks/useSiteConfig";
 import { CallbackPage } from "../page/callback";
 import { CompatTasksPage } from "../page/compat-tasks";
 import { DashboardPage } from "../page/newAdmin/Dashboard/index";
+import { FeedAdminPage } from '../page/newAdmin/Feed/index'
+import FeedEditPage from '../page/newAdmin/Feed/Edit'
 import { ErrorPage } from "../page/error";
 import { AntdProvider } from "../components/ui/antd-provider";
 import { FeedPage, TOCHeader } from "../page/feed";
@@ -98,6 +100,16 @@ export function AppRoutes() {
 
       <AntdRoute path="/admin/dashboard" requirePermission>
         <DashboardPage />
+      </AntdRoute>
+
+      <AntdRoute path="/admin/feed" requirePermission>
+        <FeedAdminPage />
+      </AntdRoute>
+      <AntdRoute path="/admin/feed/edit" requirePermission>
+        <FeedEditPage />
+      </AntdRoute>
+      <AntdRoute path="/admin/feed/edit/:id" requirePermission>
+        <FeedEditPage />
       </AntdRoute>
 
       <AdminRoute path="/admin/health" requirePermission title={t("health.title")} description={t("admin.health_description")}>
