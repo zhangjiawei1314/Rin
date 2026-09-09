@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import { visualizer } from "rollup-plugin-visualizer";
-import imp from "vite-plugin-imp";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -20,19 +19,9 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      imp({
-        libList: [
-          {
-            libName: 'antd',
-            style: (name) => `antd/es/${name}/style/index.css`,
-          },
-          {
-            libName: '@ant-design/icons',
-            libDirectory: 'es/icons',
-            camel2DashComponentName: false,
-          },
-        ],
-      }) as any,
+      // antd 6 使用 CSS-in-JS（样式运行时自动注入），无需 vite-plugin-imp 做样式按需加载；
+      // @ant-design/icons 为 ESM 可直接 tree-shake，imp 插件已移除（它会向 antd 注入
+      // 不存在的 antd/es/<组件>/style/css.js 导致生产构建失败）
       // Only open visualizer in build mode
       visualizer({ open: !isDev })
     ],
