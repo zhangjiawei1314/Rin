@@ -15,6 +15,7 @@ import type {
   UpdateFeedRequest,
   AdjacentFeedResponse,
   UserProfile,
+  UserAdminInfo,
   UpdateProfileRequest,
   Tag,
   TagDetail,
@@ -137,6 +138,7 @@ export type {
   UpdateFeedRequest,
   AdjacentFeedResponse,
   UserProfile,
+  UserAdminInfo,
   UpdateProfileRequest,
   Tag,
   TagDetail,
@@ -375,6 +377,11 @@ class UserAPI {
     return this.http.get<UserProfile>("/api/user/profile");
   }
 
+  // GET /api/user/list
+  async list(): Promise<ApiResponse<UserAdminInfo[]>> {
+    return this.http.get<UserAdminInfo[]>("/api/user/list");
+  }
+
   // PUT /api/user/profile
   async updateProfile(body: UpdateProfileRequest): Promise<ApiResponse<{ success: boolean }>> {
     return this.http.put<{ success: boolean }>("/api/user/profile", body);
@@ -605,6 +612,11 @@ class AuthAPI {
   // POST /api/auth/login
   async login(body: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     return this.http.post<LoginResponse>("/api/auth/login", body);
+  }
+
+  // POST /api/auth/register
+  async register(body: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    return this.http.post<LoginResponse>("/api/auth/register", body);
   }
 }
 

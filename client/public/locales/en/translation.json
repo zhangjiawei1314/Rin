@@ -204,20 +204,34 @@
   "listed": "Listed in articles",
   "load_more": "Load More",
   "login": {
+    "confirm_password": {
+      "placeholder": "Confirm your password"
+    },
+    "confirm_mismatch": "Passwords do not match",
     "error": {
       "empty": "Please enter username and password",
       "failed": "Login failed",
       "invalid": "Invalid username or password",
-      "network": "Network error, please try again"
+      "network": "Network error, please try again",
+      "username_short": "Username must be at least 2 characters",
+      "weak_password": "Password must be at least 6 characters",
+      "username_taken": "Username is already taken"
     },
     "loading": "Logging in...",
+    "mode": {
+      "login": "Login",
+      "register": "Register"
+    },
     "no_methods": "No login methods available",
     "oauth_only": "Please log in to continue",
     "or": "or",
     "password": {
       "placeholder": "Please enter your password"
     },
+    "register": "Register",
+    "registering": "Registering...",
     "required": "Please log in to continue",
+    "sign_in_hint": "Sign in to your site admin",
     "title": "Login",
     "username": {
       "placeholder": "Please enter your username"
@@ -759,6 +773,7 @@
   "antd": {
     "menu": {
       "dashboard": "Dashboard",
+      "users": "Users",
       "content": "Content Management",
       "writing": "Article Management",
       "tags": "Tag Management",

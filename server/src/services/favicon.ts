@@ -3,6 +3,8 @@ import type { AppContext } from "../core/hono-types";
 import { profileAsync } from "../core/server-timing";
 import { path_join } from "../utils/path";
 import { getStorageObject, getStoragePublicUrl, putStorageObjectAtKey } from "../utils/storage";
+import { uploadToImgbb, useImgbb } from "./storage";
+import { persistRegularConfig } from "./config-helpers";
 
 // @see https://developers.cloudflare.com/images/url-format#supported-formats-and-limitations
 export const FAVICON_ALLOWED_TYPES: { [key: string]: string } = {
@@ -11,6 +13,9 @@ export const FAVICON_ALLOWED_TYPES: { [key: string]: string } = {
     "image/gif": ".gif",
     "image/webp": ".webp",
 };
+
+// imgbb 模式下 favicon 直链持久化的 config key；GET /favicon 读到该值即重定向到直链。
+export const FAVICON_URL_CONFIG_KEY = "site.favicon";
 
 export function getFaviconKey(env: Env) {
     return path_join(env.S3_FOLDER || "", "favicon.webp");
@@ -63,8 +68,17 @@ export function FaviconService(): Hono {
         const env = c.get('env');
         const clientConfig = c.get('clientConfig');
         const faviconKey = getFaviconKey(env);
-        
+
         try {
+            // imgbb 模式下 favicon 直链持久化在 config；读到即重定向，浏览器直接引用 imgbb 直链。
+            const faviconUrl = await profileAsync(c, 'favicon_config_url', () =>
+                clientConfig.get(FAVICON_URL_CONFIG_KEY),
+            ) as string | undefined;
+            if (faviconUrl) {
+                c.header("Cache-Control", "public, max-age=31536000");
+                return c.redirect(faviconUrl, 302);
+            }
+
             const response = await profileAsync(c, 'favicon_fetch', () => getStorageObject(env, faviconKey));
 
             if (!response) {
@@ -156,7 +170,32 @@ export function FaviconService(): Hono {
                 c.status(400);
                 return c.text("Disallowed file type");
             }
-            
+
+            // imgbb 模式（或未配置 R2/S3）：直接把原图上传 imgbb，返回直链作为 favicon，
+            // 跳过 S3 存储与 cf.image 转码，与 StorageService 的存储分支持平。
+            if (useImgbb(env)) {
+                const apiKey = env.IMGBB_API_KEY;
+                if (!apiKey) {
+                    console.error("IMGBB_API_KEY is not defined");
+                    c.status(500);
+                    return c.text("IMGBB_API_KEY is not defined");
+                }
+                try {
+                    const url = await profileAsync(c, 'favicon_imgbb', () => uploadToImgbb(file, apiKey));
+                    // 持久化直链到 config，GET /favicon 才能读到并生效（imgbb 模式没有 R2/S3 的 favicon.webp）。
+                    const clientConfig = c.get('clientConfig');
+                    await profileAsync(c, 'favicon_imgbb_persist', () =>
+                        persistRegularConfig(clientConfig, { [FAVICON_URL_CONFIG_KEY]: url }),
+                    );
+                    return c.json({ url });
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    console.error("Error uploading favicon to imgbb:", msg);
+                    c.status(400);
+                    return c.text(msg);
+                }
+            }
+
             const originFaviconKey = path_join(
                 env.S3_FOLDER || "",
                 `originFavicon${FAVICON_ALLOWED_TYPES[file.type]}`,

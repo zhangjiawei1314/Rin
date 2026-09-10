@@ -11,19 +11,19 @@ import { Tips, TipsPage } from "../components/tips";
 import useTableOfContents from "../hooks/useTableOfContents";
 import { useSiteConfig } from "../hooks/useSiteConfig";
 import { CallbackPage } from "../page/callback";
-import { CompatTasksPage } from "../page/compat-tasks";
 import { DashboardPage } from "../page/newAdmin/Dashboard/index";
 import { FeedAdminPage } from '../page/newAdmin/Feed/index'
 import FeedEditPage from '../page/newAdmin/Feed/Edit'
+import { AdminSettingsPage } from "../page/newAdmin/Settings";
+import { UserAdminPage } from "../page/newAdmin/User";
 import { ErrorPage } from "../page/error";
 import { AntdProvider } from "../components/ui/antd-provider";
 import { FeedPage, TOCHeader } from "../page/feed";
 import { FeedsPage } from "../page/feeds";
 import { FriendsPage } from "../page/friends";
-import { HealthPage } from "../page/health";
 import { HashtagPage } from "../page/hashtag";
 import { HashtagsPage } from "../page/hashtags";
-import { LoginPage } from "../page/login";
+import LoginPage from "../page/Login";
 import { MomentsPage } from "../page/moments";
 import { ProfilePage } from "../page/profile";
 import { QueueStatusPage } from "../page/queue-status";
@@ -94,6 +94,10 @@ export function AppRoutes() {
         {(params) => <SearchPage keyword={params.keyword || ""} />}
       </AppRoute>
 
+      <AntdRoute path="/admin/config" requirePermission>
+        <AdminSettingsPage />
+      </AntdRoute>
+
       <AdminRoute path="/admin/settings" requirePermission title={t("settings.title")} description={t("admin.settings_description")}>
         <Settings />
       </AdminRoute>
@@ -112,16 +116,12 @@ export function AppRoutes() {
         <FeedEditPage />
       </AntdRoute>
 
-      <AdminRoute path="/admin/health" requirePermission title={t("health.title")} description={t("admin.health_description")}>
-        <HealthPage />
-      </AdminRoute>
+      <AntdRoute path="/admin/users" requirePermission>
+        <UserAdminPage />
+      </AntdRoute>
 
       <AdminRoute path="/admin/queue-status" requirePermission title={t("queue_status.title")} description={t("admin.queue_status_description")}>
         <QueueStatusPage />
-      </AdminRoute>
-
-      <AdminRoute path="/admin/compat-tasks" requirePermission title={t("compat_tasks.title")} description={t("admin.compat_tasks_description")}>
-        <CompatTasksPage />
       </AdminRoute>
 
       <AdminRoute path="/admin/writing" requirePermission title={t("writing")} description={t("admin.writing_description")}>
@@ -136,9 +136,10 @@ export function AppRoutes() {
         <CallbackPage />
       </AppRoute>
 
-      <AppRoute path="/login">
+      {/* 登录页为独立全屏页面，不套站点 Header/Footer 外壳 */}
+      <Route path="/login">
         <LoginPage />
-      </AppRoute>
+      </Route>
 
       <AppRoute path="/profile">
         <ProfilePage />

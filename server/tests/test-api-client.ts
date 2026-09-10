@@ -22,6 +22,15 @@ interface AuthApi {
         github: boolean;
         password: boolean;
     }>>;
+    register(credentials: { username: string; password: string }): Promise<ApiResponse<{
+        success: boolean;
+        token: string;
+        user: {
+            id: number;
+            username: string;
+            permission: boolean;
+        };
+    }>>;
 }
 
 interface TestClient {
@@ -71,6 +80,29 @@ export function createTestClient(app: Hono | FetchableApp, env: Env): TestClient
                 const res = await fetchableApp.fetch(req, env);
                 const data = await res.json().catch(() => null);
                 
+                if (res.ok) {
+                    return { data };
+                } else {
+                    return {
+                        error: {
+                            status: res.status,
+                            value: data,
+                        },
+                    };
+                }
+            },
+
+            async register(credentials: { username: string; password: string }): Promise<ApiResponse<any>> {
+                const req = new Request(`${baseUrl}/auth/register`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(credentials),
+                });
+                const res = await fetchableApp.fetch(req, env);
+                const data = await res.json().catch(() => null);
+
                 if (res.ok) {
                     return { data };
                 } else {

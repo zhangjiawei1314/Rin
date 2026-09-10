@@ -114,6 +114,18 @@ export interface UserProfile {
   username: string;
   avatar: string | null;
   permission: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UserAdminInfo {
+  id: number;
+  username: string;
+  openid: string;
+  avatar: string | null;
+  permission: number | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UpdateProfileRequest {

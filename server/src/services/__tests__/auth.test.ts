@@ -327,6 +327,70 @@ describe("PasswordAuthService", () => {
       expect(result.data?.password).toBe(false);
     });
   });
+
+  describe("POST /auth/register - Register a new account", () => {
+    it("should create a regular user and return a token", async () => {
+      const result = await api.auth.register({
+        username: "newuser",
+        password: "secret123",
+      });
+
+      expect(result.error).toBeUndefined();
+      expect(result.data?.success).toBe(true);
+      expect(result.data?.token).toBeDefined();
+      expect(result.data?.user.username).toBe("newuser");
+      expect(result.data?.user.permission).toBe(false);
+
+      const dbResult = sqlite
+        .prepare(`SELECT * FROM users WHERE username = 'newuser'`)
+        .all() as any[];
+      expect(dbResult.length).toBe(1);
+      expect(dbResult[0].password).toBe(await hashPassword("secret123"));
+    });
+
+    it("should reject duplicate usernames", async () => {
+      await api.auth.register({ username: "dupe", password: "secret123" });
+
+      const result = await api.auth.register({
+        username: "dupe",
+        password: "secret123",
+      });
+
+      expect(result.error).toBeDefined();
+      expect(result.error?.status).toBe(409);
+      const errorData = result.error?.value as any;
+      expect(errorData.error.message).toBe("Username already exists");
+    });
+
+    it("should reject the reserved username 'admin'", async () => {
+      const result = await api.auth.register({
+        username: "admin",
+        password: "secret123",
+      });
+
+      expect(result.error?.status).toBe(409);
+    });
+
+    it("should require username and password", async () => {
+      const result = await api.auth.register({ username: "", password: "" });
+
+      expect(result.error?.status).toBe(400);
+    });
+
+    it("should reject short usernames and weak passwords", async () => {
+      const shortUser = await api.auth.register({
+        username: "a",
+        password: "secret123",
+      });
+      expect(shortUser.error?.status).toBe(400);
+
+      const weakPass = await api.auth.register({
+        username: "validname",
+        password: "123",
+      });
+      expect(weakPass.error?.status).toBe(400);
+    });
+  });
 });
 
 // Hash password using SHA-256

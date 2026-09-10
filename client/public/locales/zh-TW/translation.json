@@ -203,20 +203,34 @@
   "listed": "列出在文章中",
   "load_more": "載入更多",
   "login": {
+    "confirm_password": {
+      "placeholder": "請再次輸入密碼"
+    },
+    "confirm_mismatch": "兩次輸入的密碼不一致",
     "error": {
       "empty": "請輸入用戶名和密碼",
       "failed": "登入失敗",
       "invalid": "用戶名或密碼錯誤",
-      "network": "網路錯誤，請重試"
+      "network": "網路錯誤，請重試",
+      "username_short": "用戶名至少 2 個字元",
+      "weak_password": "密碼至少 6 個字元",
+      "username_taken": "用戶名已被佔用"
     },
     "loading": "登入中...",
+    "mode": {
+      "login": "登入",
+      "register": "註冊"
+    },
     "no_methods": "沒有可用的登入方式",
     "oauth_only": "請登入後繼續",
     "or": "或",
     "password": {
       "placeholder": "請輸入密碼"
     },
+    "register": "註冊",
+    "registering": "註冊中...",
     "required": "請登入後繼續",
+    "sign_in_hint": "登入你的網站管理後台",
     "title": "登入",
     "username": {
       "placeholder": "請輸入用戶名"

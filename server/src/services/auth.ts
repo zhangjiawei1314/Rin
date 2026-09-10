@@ -2,10 +2,11 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { AppContext, Variables } from "../core/hono-types";
 import { profileAsync } from "../core/server-timing";
-import { setJWTCookie, clearJWTCookie } from "../core/hono-middleware";
+import { setJWTCookie } from "../core/hono-middleware";
 import { users } from "../db/schema";
 import {
     BadRequestError,
+    ConflictError,
     ForbiddenError,
     InternalServerError,
 } from "../errors";
@@ -27,6 +28,67 @@ export function PasswordAuthService(): Hono<{
         Bindings: Env;
         Variables: Variables;
     }>();
+    // Register a new account with username + password
+    app.post("/register", async (c: AppContext) => {
+        const jwt = c.get('jwt');
+        const db = c.get('db');
+
+        const { username, password } = await profileAsync(c, 'auth_register_parse', () => c.req.json()) as { username: string; password: string };
+
+        if (!username || !password) {
+            throw new BadRequestError('Username and password are required');
+        }
+
+        const trimmedUsername = username.trim();
+        if (trimmedUsername.length < 2) {
+            throw new BadRequestError('Username must be at least 2 characters');
+        }
+        if (password.length < 6) {
+            throw new BadRequestError('Password must be at least 6 characters');
+        }
+
+        // 用户名与 "admin" 冲突会撞 openid，直接拒绝
+        if (trimmedUsername === "admin") {
+            throw new ConflictError('Username is not available');
+        }
+
+        const existing = await profileAsync(c, 'auth_register_lookup', () => db.query.users.findFirst({
+            where: eq(users.username, trimmedUsername),
+        }));
+        if (existing) {
+            throw new ConflictError('Username already exists');
+        }
+
+        const hashedPassword = await profileAsync(c, 'auth_register_hash', () => hashPassword(password));
+
+        const result = await profileAsync(c, 'auth_register_insert', () => db.insert(users).values({
+            username: trimmedUsername,
+            openid: trimmedUsername,
+            avatar: "",
+            permission: 0,
+            password: hashedPassword,
+        }).returning({ insertedId: users.id }));
+
+        if (!result || result.length === 0) {
+            throw new InternalServerError('Failed to create user');
+        }
+
+        // 注册成功后直接登录，返回 token 与用户信息
+        const token = await profileAsync(c, 'auth_register_token', () => jwt.sign({ id: result[0].insertedId }));
+        setJWTCookie(c, token);
+
+        return c.json({
+            success: true,
+            token,
+            user: {
+                id: result[0].insertedId,
+                username: trimmedUsername,
+                avatar: "",
+                permission: false,
+            },
+        });
+    });
+
     // Login with username and password
     app.post("/login", async (c: AppContext) => {
         const jwt = c.get('jwt');

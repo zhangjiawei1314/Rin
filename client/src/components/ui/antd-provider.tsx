@@ -1,4 +1,4 @@
-import { ConfigProvider, theme } from 'antd'
+import { App, ConfigProvider, theme } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import { ReactNode } from 'react'
 
@@ -18,7 +18,7 @@ export function AntdProvider({ children }: AntdProviderProps) {
         },
       }}
     >
-      {children}
+      <App>{children}</App>
     </ConfigProvider>
   )
 }

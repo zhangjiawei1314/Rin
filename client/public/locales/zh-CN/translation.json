@@ -204,20 +204,34 @@
   "listed": "列出在文章中",
   "load_more": "加载更多",
   "login": {
+    "confirm_password": {
+      "placeholder": "请再次输入密码"
+    },
+    "confirm_mismatch": "两次输入的密码不一致",
     "error": {
       "empty": "请输入用户名和密码",
       "failed": "登录失败",
       "invalid": "用户名或密码错误",
-      "network": "网络错误，请重试"
+      "network": "网络错误，请重试",
+      "username_short": "用户名至少 2 个字符",
+      "weak_password": "密码至少 6 个字符",
+      "username_taken": "用户名已被占用"
     },
     "loading": "登录中...",
+    "mode": {
+      "login": "登录",
+      "register": "注册"
+    },
     "no_methods": "没有可用的登录方式",
     "oauth_only": "请登录后继续",
     "or": "或",
     "password": {
       "placeholder": "请输入密码"
     },
+    "register": "注册",
+    "registering": "注册中...",
     "required": "请登录后继续",
+    "sign_in_hint": "登录到你的站点管理后台",
     "title": "登录",
     "username": {
       "placeholder": "请输入用户名"
@@ -759,6 +773,7 @@
   "antd": {
     "menu": {
       "dashboard": "仪表盘",
+      "users": "用户管理",
       "content": "内容管理",
       "writing": "文章管理",
       "tags": "标签管理",

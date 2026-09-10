@@ -15,7 +15,7 @@ function buf2hex(buffer: ArrayBuffer) {
  * 未配置 R2 / S3 时，把文件转发到 imgbb 图片托管。
  * 返回直链 url，契约与 S3/R2 分支一致：`{ url }`。
  */
-async function uploadToImgbb(file: File, apiKey: string): Promise<string> {
+export async function uploadToImgbb(file: File, apiKey: string): Promise<string> {
     const form = new FormData();
     form.append("key", apiKey);
     // 优先带原始文件名，imgbb 会自动检测
@@ -51,7 +51,7 @@ async function uploadToImgbb(file: File, apiKey: string): Promise<string> {
     return url;
 }
 
-function useImgbb(env: Env) {
+export function useImgbb(env: Env) {
     // 显式指定 imgbb 时直接走 imgbb；否则仅在没配 R2 和 S3 时兜底走 imgbb
     return env.STORAGE_PROVIDER === "imgbb" || (!env.R2_BUCKET && !env.S3_ENDPOINT);
 }

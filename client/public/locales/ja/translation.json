@@ -203,11 +203,34 @@
   "listed": "記事にリスト",
   "load_more": "もっと読み込む",
   "login": {
+    "confirm_password": {
+      "placeholder": "パスワードを再入力してください"
+    },
+    "confirm_mismatch": "パスワードが一致しません",
+    "error": {
+      "empty": "ユーザー名とパスワードを入力してください",
+      "failed": "ログインに失敗しました",
+      "invalid": "ユーザー名またはパスワードが違います",
+      "network": "ネットワークエラーです。もう一度お試しください",
+      "username_short": "ユーザー名は最低2文字以上必要です",
+      "weak_password": "パスワードは最低6文字以上必要です",
+      "username_taken": "そのユーザー名は既に使用されています"
+    },
+    "loading": "ログイン中...",
+    "mode": {
+      "login": "ログイン",
+      "register": "新規登録"
+    },
+    "no_methods": "利用可能なログイン方法はありません",
     "oauth_only": "続行するにはログインしてください",
+    "or": "または",
     "password": {
       "placeholder": "パスワードを入力してください"
     },
+    "register": "新規登録",
+    "registering": "登録中...",
     "required": "続行するにはログインしてください",
+    "sign_in_hint": "サイト管理画面にログイン",
     "title": "ログイン",
     "username": {
       "placeholder": "ユーザー名を入力してください"

@@ -29,7 +29,12 @@ export function AntdAdminLayout({ children }: AntdAdminLayoutProps) {
     {
       key: '/admin/dashboard',
       icon: <DashboardOutlined />,
-      label: t('antd.menu.dashboard', '仪表盘'),
+      label: t('antd.menu.dashboard', '首页'),
+    },
+    {
+      key: '/admin/users',
+      icon: <UserOutlined />,
+      label: t('antd.menu.users', '用户管理'),
     },
     {
       key: '/admin/content',
@@ -47,9 +52,9 @@ export function AntdAdminLayout({ children }: AntdAdminLayoutProps) {
       ],
     },
     {
-      key: '/admin/settings',
+      key: '/admin/config',
       icon: <SettingOutlined />,
-      label: t('antd.menu.settings', '系统设置'),
+      label: t('/admin/config', '系统设置'),
     },
   ]
 

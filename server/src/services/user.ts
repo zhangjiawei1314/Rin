@@ -1,10 +1,11 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import type { AppContext } from "../core/hono-types";
 import { profileAsync } from "../core/server-timing";
 import { setJWTCookie } from "../core/hono-middleware";
 import { users } from "../db/schema";
+import { adminOnly } from "../core/route-boundaries";
 import {
     BadRequestError,
     ForbiddenError,
@@ -209,6 +210,22 @@ export function UserService(): Hono {
 
         return c.json({ success: true });
     });
+
+    // GET /user/list - Get all users (Admin only)
+    app.get("/list", adminOnly(async (c: AppContext) => {
+        const db = c.get('db');
+        const allUsers = await profileAsync(c, 'user_list_lookup', () => db.select({
+            id: users.id,
+            username: users.username,
+            openid: users.openid,
+            avatar: users.avatar,
+            permission: users.permission,
+            createdAt: users.createdAt,
+            updatedAt: users.updatedAt,
+        }).from(users).orderBy(desc(users.id)));
+
+        return c.json(allUsers);
+    }, { format: 'json' }));
 
     return app;
 }

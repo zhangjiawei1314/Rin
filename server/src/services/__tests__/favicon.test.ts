@@ -259,6 +259,33 @@ describe('FaviconService', () => {
             expect(res.headers.get('content-type')).toBe('image/webp');
             expect(await res.text()).toBe('test');
         });
+
+        it('should redirect to the persisted imgbb favicon url when set', async () => {
+            const imgbbEnv = createMockEnv({
+                STORAGE_PROVIDER: 'imgbb' as any,
+                IMGBB_API_KEY: 'test-imgbb-key',
+            });
+            const seededClientConfig = new TestCacheImpl();
+            await seededClientConfig.set('site.favicon', 'https://i.ibb.co/favicon.png');
+
+            const redirectApp = new Hono<{ Bindings: Env; Variables: Variables }>();
+            redirectApp.use(createMiddleware<{ Bindings: Env; Variables: Variables }>(async (c, next) => {
+                c.set('db', db);
+                c.set('cache', new TestCacheImpl());
+                c.set('serverConfig', new TestCacheImpl());
+                c.set('clientConfig', seededClientConfig);
+                c.set('env', imgbbEnv);
+                c.set('uid', 1);
+                c.set('admin', true);
+                await next();
+            }));
+            redirectApp.route('/', FaviconService());
+
+            const res = await redirectApp.request('/', { method: 'GET' }, imgbbEnv);
+
+            expect(res.status).toBe(302);
+            expect(res.headers.get('Location')).toBe('https://i.ibb.co/favicon.png');
+        });
     });
 
     describe('GET /original - Get original favicon', () => {
@@ -328,6 +355,104 @@ describe('FaviconService', () => {
             // Should not be 403 - permission check passes
             // Will fail due to S3 not available
             expect(res.status).not.toBe(403);
+        });
+
+        it('should upload to imgbb when STORAGE_PROVIDER=imgbb, skipping S3 + cf.image', async () => {
+            const imgbbEnv = createMockEnv({
+                STORAGE_PROVIDER: 'imgbb' as any,
+                IMGBB_API_KEY: 'test-imgbb-key',
+            });
+            // 共享同一个 clientConfig 实例，POST 后能断言直链已持久化
+            const imgbbClientConfig = new TestCacheImpl();
+            const imgbbApp = new Hono<{ Bindings: Env; Variables: Variables }>();
+            imgbbApp.use(createMiddleware<{ Bindings: Env; Variables: Variables }>(async (c, next) => {
+                c.set('db', db);
+                c.set('cache', new TestCacheImpl());
+                c.set('serverConfig', new TestCacheImpl());
+                c.set('clientConfig', imgbbClientConfig);
+                c.set('jwt', {
+                    sign: async (payload: any) => `mock_token_${payload.id}`,
+                    verify: async (token: string) => token.startsWith('mock_token_') ? { id: 1 } : null,
+                } as JWTUtils);
+                c.set('oauth2', undefined);
+                c.set('env', imgbbEnv);
+                c.set('uid', 1);
+                c.set('admin', true);
+                await next();
+            }));
+            imgbbApp.route('/', FaviconService());
+
+            const file = new File(['test'], 'favicon.png', { type: 'image/png' });
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Mock imgbb upload to avoid a real network call
+            const originalFetch = globalThis.fetch;
+            let sawImgbbCall = false;
+            globalThis.fetch = (async (input: any) => {
+                const url = String(input?.url ?? input);
+                if (url.includes('api.imgbb.com/1/upload')) {
+                    sawImgbbCall = true;
+                    return new Response(
+                        JSON.stringify({ success: true, data: { url: 'https://i.ibb.co/favicon.png' } }),
+                        { status: 200, headers: { 'Content-Type': 'application/json' } },
+                    );
+                }
+                return new Response('not found', { status: 404 });
+            }) as typeof fetch;
+
+            try {
+                const res = await imgbbApp.request('/', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer mock_token_1' },
+                    body: formData,
+                }, imgbbEnv);
+
+                expect(res.status).toBe(200);
+                const payload = await res.json() as { url: string };
+                expect(payload.url).toBe('https://i.ibb.co/favicon.png');
+                expect(sawImgbbCall).toBe(true);
+                // 直链已持久化到 config，GET /favicon 才能读到并生效
+                expect(await imgbbClientConfig.get('site.favicon')).toBe('https://i.ibb.co/favicon.png');
+            } finally {
+                globalThis.fetch = originalFetch;
+            }
+        });
+
+        it('should return 500 when imgbb selected but IMGBB_API_KEY is missing', async () => {
+            const noKeyEnv = createMockEnv({
+                STORAGE_PROVIDER: 'imgbb' as any,
+                IMGBB_API_KEY: '' as any,
+            });
+            const noKeyApp = new Hono<{ Bindings: Env; Variables: Variables }>();
+            noKeyApp.use(createMiddleware<{ Bindings: Env; Variables: Variables }>(async (c, next) => {
+                c.set('db', db);
+                c.set('cache', new TestCacheImpl());
+                c.set('serverConfig', new TestCacheImpl());
+                c.set('clientConfig', new TestCacheImpl());
+                c.set('jwt', {
+                    sign: async (payload: any) => `mock_token_${payload.id}`,
+                    verify: async (token: string) => token.startsWith('mock_token_') ? { id: 1 } : null,
+                } as JWTUtils);
+                c.set('oauth2', undefined);
+                c.set('env', noKeyEnv);
+                c.set('uid', 1);
+                c.set('admin', true);
+                await next();
+            }));
+            noKeyApp.route('/', FaviconService());
+
+            const file = new File(['test'], 'favicon.png', { type: 'image/png' });
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await noKeyApp.request('/', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer mock_token_1' },
+                body: formData,
+            }, noKeyEnv);
+
+            expect(res.status).toBe(500);
         });
     });
 

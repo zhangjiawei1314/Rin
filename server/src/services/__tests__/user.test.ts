@@ -286,4 +286,34 @@ describe('UserService', () => {
             expect(data).toBeDefined();
         });
     });
+
+    describe('GET /list - Get all users', () => {
+        it('should allow admin user to retrieve all users', async () => {
+            const res = await app.request('/list', {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer mock_token_2' }
+            }, env);
+
+            expect(res.status).toBe(200);
+            const data = await res.json() as any[];
+            expect(data).toHaveLength(2);
+            expect(data[0].id).toBe(2); // ordered by id desc
+            expect(data[1].id).toBe(1);
+            expect(data[0].password).toBeUndefined(); // password should be omitted/not in schema select
+        });
+
+        it('should prevent non-admin user from retrieving users', async () => {
+            const res = await app.request('/list', {
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer mock_token_1' }
+            }, env);
+
+            expect(res.status).toBe(401); // adminOnly route boundary returns 401 Unauthorized by default
+        });
+
+        it('should require authentication', async () => {
+            const res = await app.request('/list', { method: 'GET' }, env);
+            expect(res.status).toBe(401);
+        });
+    });
 });

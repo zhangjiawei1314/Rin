@@ -1,10 +1,17 @@
 import { useState } from 'react'
-import { Card, Row, Col, Statistic, Button, Table, Tag, Space } from 'antd'
+import { Card, Row, Col, Statistic, Button, Table, Tag, Space, BorderBeam } from 'antd'
 import { ArrowUpOutlined, PlusOutlined, EditOutlined, ReloadOutlined, PlusCircleOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 import { Helmet } from 'react-helmet'
 import { AntdAdminLayout } from "../../../components/ui/admin-layout";
 import { Link } from 'wouter'
+import { QueueStatusPage } from '../../queue-status'
+
+const configColors = [
+  { color: '#22c55e', percent: 0 },
+  { color: '#a3e635', percent: 54 },
+  { color: '#facc15', percent: 100 },
+]
 
 export function DashboardPage() {
   const { t } = useTranslation()
@@ -65,6 +72,7 @@ export function DashboardPage() {
       <Helmet>
         <title>{t('antd.dashboard.title')} - Rin Admin</title>
       </Helmet>
+      {/* 操作按钮 */}
       <AntdAdminLayout>
         <div>
           {/* 页面标题 */}
@@ -72,6 +80,17 @@ export function DashboardPage() {
             <h1 className="text-2xl font-bold">{t('antd.dashboard.title')}</h1>
             <p className="text-gray-600 mt-2">{t('antd.dashboard.description')}</p>
           </div>
+
+          <Space>
+            <Link to="/admin/feed/edit">
+              <Button type="primary" icon={<PlusCircleOutlined />}>
+                新建文章
+              </Button>
+            </Link>
+            <Button>
+              {t('antd.table.export', '导出数据')}
+            </Button>
+          </Space>
 
           {/* 统计卡片 */}
           <Row gutter={16} className="mb-6">
@@ -90,33 +109,30 @@ export function DashboardPage() {
           </Row>
 
           {/* 数据表格 */}
-          <Card
-            title={t('antd.table.recent_articles', '最近文章')}
-            extra={
-              <Button icon={<ReloadOutlined />}>
-                {t('antd.table.refresh', '刷新')}
-              </Button>
-            }
-            className="mb-6"
-          >
-            <Table
-              columns={columns}
-              dataSource={data}
-              pagination={{ pageSize: 10 }}
-            />
-          </Card>
+          <BorderBeam count={3} size={200} color={configColors}>
+            <Card
+              title={t('antd.table.recent_articles', '最近文章')}
+              extra={
+                <Button icon={<ReloadOutlined />}>
+                  {t('antd.table.refresh', '刷新')}
+                </Button>
+              }
+              className="mb-6"
+            >
+              <Table
+                columns={columns}
+                dataSource={data}
+                pagination={{ pageSize: 10 }}
+              />
+            </Card>
+          </BorderBeam>
+          <BorderBeam count={3} size={150} color={configColors}>
+            <Card title="队列状态">
+              <div>查看 AI 摘要队列进度、最近任务结果和失败信息。</div>
+              <QueueStatusPage />
+            </Card>
+          </BorderBeam>
 
-          {/* 操作按钮 */}
-          <Space>
-            <Link to="/admin/feed/edit">
-              <Button type="primary" icon={<PlusCircleOutlined />}>
-                新建文章
-              </Button>
-            </Link>
-            <Button>
-              {t('antd.table.export', '导出数据')}
-            </Button>
-          </Space>
         </div>
       </AntdAdminLayout>
     </>
