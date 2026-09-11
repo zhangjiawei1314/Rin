@@ -12,6 +12,7 @@ import {
     InternalServerError,
     NotFoundError
 } from "../errors";
+import { UserStatus } from "@rin/api";
 
 export function UserService(): Hono {
     const app = new Hono();
@@ -161,6 +162,10 @@ export function UserService(): Hono {
             throw new NotFoundError('User');
         }
 
+        if (user.frozen === UserStatus.Frozen) {
+            throw new ForbiddenError('Account is frozen');
+        }
+
         return c.json({
             id: user.id,
             username: user.username,
@@ -220,11 +225,42 @@ export function UserService(): Hono {
             openid: users.openid,
             avatar: users.avatar,
             permission: users.permission,
+            frozen: users.frozen,
             createdAt: users.createdAt,
             updatedAt: users.updatedAt,
         }).from(users).orderBy(desc(users.id)));
 
         return c.json(allUsers);
+    }, { format: 'json' }));
+
+    // PUT /user/freeze/:id - Freeze/Unfreeze a user (Admin only)
+    app.put("/freeze/:id", adminOnly(async (c: AppContext) => {
+        const db = c.get('db');
+        const userId = parseInt(c.req.param('id'), 10);
+        const body = await profileAsync(c, 'user_freeze_parse', () => c.req.json()) as { frozen: number };
+
+        if (isNaN(userId)) {
+            throw new BadRequestError('Invalid user ID');
+        }
+
+        const user = await profileAsync(c, 'user_freeze_lookup', () => db.query.users.findFirst({
+            where: eq(users.id, userId)
+        }));
+
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
+
+        // Prevent freezing admin users
+        if (user.permission === 1 && body.frozen === UserStatus.Frozen) {
+            throw new BadRequestError('Cannot freeze admin users');
+        }
+
+        await profileAsync(c, 'user_freeze_update', () => db.update(users).set({
+            frozen: body.frozen ? UserStatus.Frozen : UserStatus.Normal,
+        }).where(eq(users.id, userId)));
+
+        return c.json({ success: true });
     }, { format: 'json' }));
 
     return app;

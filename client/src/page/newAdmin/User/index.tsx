@@ -1,11 +1,12 @@
 import { Helmet } from 'react-helmet'
 import { useState, useEffect, useCallback } from 'react'
-import { Card, Space, Table, Avatar, Tag, Button, Tooltip } from 'antd'
-import { UserOutlined, ReloadOutlined, SafetyCertificateOutlined, GithubOutlined } from '@ant-design/icons'
+import { Card, Space, Table, Avatar, Tag, Button, Tooltip, Popconfirm, message } from 'antd'
+import { UserOutlined, ReloadOutlined, SafetyCertificateOutlined, GithubOutlined, LockOutlined, UnlockOutlined } from '@ant-design/icons'
 import { client } from '../../../app/runtime'
 import { AntdAdminLayout } from '../../../components/ui/admin-layout'
 import { formatDateTime } from '../../../utils/format-date'
 import type { UserAdminInfo } from '@rin/api'
+import { UserStatus } from '@rin/api'
 
 export function UserAdminPage() {
   const [loading, setLoading] = useState(false)
@@ -71,6 +72,18 @@ export function UserAdminPage() {
       ),
     },
     {
+      title: '状态',
+      dataIndex: 'frozen',
+      key: 'frozen',
+      render: (frozen: number) => (
+        frozen === UserStatus.Frozen ? (
+          <Tag color="red" icon={<LockOutlined />}>已冻结</Tag>
+        ) : (
+          <Tag color="green" icon={<UnlockOutlined />}>正常</Tag>
+        )
+      ),
+    },
+    {
       title: '注册时间',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -79,7 +92,7 @@ export function UserAdminPage() {
           <span className="text-slate-500">{formatDateTime(date)}</span>
         </Tooltip>
       ),
-      sorter: (a: UserAdminInfo, b: UserAdminInfo) => 
+      sorter: (a: UserAdminInfo, b: UserAdminInfo) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     },
     {
@@ -88,6 +101,41 @@ export function UserAdminPage() {
       key: 'updatedAt',
       render: (date: string) => (
         <span className="text-slate-400 text-xs">{formatDateTime(date)}</span>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 120,
+      render: (_: any, record: UserAdminInfo) => (
+        <Popconfirm
+          title={record.frozen === 1 ? '确认解冻此用户？' : '确认冻结此用户？'}
+          description={record.frozen === 1 ? '解冻后用户将可以正常登录。' : '冻结后用户将无法登录，直到管理员解冻。'}
+          onConfirm={async () => {
+            try {
+              const { error } = await client.user.updateFreeze(record.id, { frozen: record.frozen === 1 ? 0 : 1 })
+              if (!error) {
+                fetchUsers()
+                message.success(record.frozen === 1 ? '已解冻用户' : '已冻结用户')
+              } else {
+                message.error('操作失败')
+              }
+            } catch {
+              message.error('操作失败')
+            }
+          }}
+          okText={record.frozen === 1 ? '解冻' : '冻结'}
+          cancelText="取消"
+          okButtonProps={{ danger: record.frozen !== 1 }}
+        >
+          <Button
+            size="small"
+            type="primary"
+            icon={record.frozen === 1 ? <UnlockOutlined /> : <LockOutlined />}
+          >
+            {record.frozen === 1 ? '解冻' : '冻结'}
+          </Button>
+        </Popconfirm>
       ),
     },
   ]
@@ -106,9 +154,9 @@ export function UserAdminPage() {
                 查看并管理所有注册用户的基本信息与权限等级。
               </p>
             </div>
-            <Button 
-              icon={<ReloadOutlined />} 
-              onClick={fetchUsers} 
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={fetchUsers}
               loading={loading}
               className="rounded-lg shadow-sm"
             >
@@ -117,9 +165,9 @@ export function UserAdminPage() {
           </div>
 
           <Card className="shadow-sm border-slate-200 overflow-hidden" bodyStyle={{ padding: 0 }}>
-            <Table 
-              columns={columns} 
-              dataSource={users} 
+            <Table
+              columns={columns}
+              dataSource={users}
               rowKey="id"
               loading={loading}
               pagination={{
@@ -127,7 +175,7 @@ export function UserAdminPage() {
                 showSizeChanger: true,
                 className: "px-6",
               }}
-              scroll={{ x: 800 }}
+              scroll={{ x: 900 }}
               className="rin-admin-table"
             />
           </Card>

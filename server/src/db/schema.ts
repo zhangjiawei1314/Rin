@@ -87,6 +87,7 @@ export const users = sqliteTable("users", {
     avatar: text("avatar"),
     password: text("password"),
     permission: integer("permission").default(0),
+    frozen: integer("frozen").default(0),
     createdAt: created_at,
     updatedAt: updated_at,
 }, (table) => ({

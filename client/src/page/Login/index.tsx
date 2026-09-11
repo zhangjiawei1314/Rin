@@ -50,7 +50,12 @@ export default function LoginPage() {
       const { data, error: apiError } = await client.auth.login(values);
 
       if (apiError) {
-        setError(t("login.error.invalid"));
+        // Check if the error is about frozen account
+        if (apiError.value === 'Account is frozen') {
+          setError('账号已冻结请联系管理员');
+        } else {
+          setError(t("login.error.invalid"));
+        }
         return;
       }
       if (data?.success) {
@@ -179,6 +184,8 @@ export default function LoginPage() {
                 token: {
                   colorPrimary: "#06b6d4",
                   colorBgContainer: "rgba(15, 23, 42, 0.65)",
+                  colorBgElevated: "rgba(15, 23, 42, 0.85)",
+                  colorBgLayout: "rgba(15, 23, 42, 0.65)",
                   colorBorder: "rgba(56, 189, 248, 0.22)",
                   colorText: "#f8fafc",
                   colorTextPlaceholder: "#64748b",
@@ -191,6 +198,11 @@ export default function LoginPage() {
                     activeBorderColor: "#38bdf8",
                     hoverBorderColor: "rgba(56, 189, 248, 0.5)",
                     activeShadow: "0 0 12px rgba(56, 189, 248, 0.25)",
+                    colorBgContainer: "rgba(15, 23, 42, 0.65)",
+                    colorBgBase: "rgba(15, 23, 42, 0.65)",
+                  },
+                  Form: {
+                    itemMarginBottom: 16,
                   },
                   Button: {
                     colorPrimary: "#06b6d4",
@@ -287,7 +299,6 @@ function LoginFormPanel({
           layout="vertical"
           requiredMark={false}
           onFinish={onFinish}
-          disabled={isLoading}
         >
           <Form.Item
             name="username"

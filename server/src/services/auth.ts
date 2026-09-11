@@ -10,6 +10,7 @@ import {
     ForbiddenError,
     InternalServerError,
 } from "../errors";
+import { UserStatus } from "@rin/api";
 
 // Hash password using SHA-256
 async function hashPassword(password: string): Promise<string> {
@@ -180,6 +181,10 @@ export function PasswordAuthService(): Hono<{
 
         if (!user || !user.password) {
             throw new ForbiddenError('Invalid credentials');
+        }
+
+        if (user.frozen === 1) {
+            throw new ForbiddenError('Account is frozen');
         }
 
         if (user.password !== hashedPassword) {

@@ -32,6 +32,7 @@ export function createMockDB() {
             openid TEXT NOT NULL,
             password TEXT,
             permission INTEGER DEFAULT 0,
+            frozen INTEGER DEFAULT 0,
             created_at INTEGER DEFAULT (unixepoch()),
             updated_at INTEGER DEFAULT (unixepoch())
         );

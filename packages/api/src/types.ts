@@ -124,6 +124,7 @@ export interface UserAdminInfo {
   openid: string;
   avatar: string | null;
   permission: number | null;
+  frozen: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -132,6 +133,16 @@ export interface UpdateProfileRequest {
   username?: string;
   avatar?: string | null;
 }
+
+export interface UpdateUserFreezeRequest {
+  frozen: number;
+}
+
+// User status constants
+export const UserStatus = {
+  Normal: 0,
+  Frozen: 1,
+} as const;
 
 // ============================================================================
 // Auth Types

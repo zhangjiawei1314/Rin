@@ -17,6 +17,7 @@ import type {
   UserProfile,
   UserAdminInfo,
   UpdateProfileRequest,
+  UpdateUserFreezeRequest,
   Tag,
   TagDetail,
   Comment,
@@ -140,6 +141,7 @@ export type {
   UserProfile,
   UserAdminInfo,
   UpdateProfileRequest,
+  UpdateUserFreezeRequest,
   Tag,
   TagDetail,
   Comment,
@@ -385,6 +387,11 @@ class UserAPI {
   // PUT /api/user/profile
   async updateProfile(body: UpdateProfileRequest): Promise<ApiResponse<{ success: boolean }>> {
     return this.http.put<{ success: boolean }>("/api/user/profile", body);
+  }
+
+  // PUT /api/user/freeze/:id
+  async updateFreeze(id: number, body: UpdateUserFreezeRequest): Promise<ApiResponse<{ success: boolean }>> {
+    return this.http.put<{ success: boolean }>(`/api/user/freeze/${id}`, body);
   }
 
   // POST /api/user/logout
