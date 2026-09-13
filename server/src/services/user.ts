@@ -263,5 +263,32 @@ export function UserService(): Hono {
         return c.json({ success: true });
     }, { format: 'json' }));
 
+    // DELETE /:id - Delete a user (Admin only)
+    app.delete("/:id", adminOnly(async (c: AppContext) => {
+        const db = c.get('db');
+        const userId = parseInt(c.req.param('id'), 10);
+
+        if (isNaN(userId)) {
+            throw new BadRequestError('Invalid user ID');
+        }
+
+        const user = await profileAsync(c, 'user_delete_lookup', () => db.query.users.findFirst({
+            where: eq(users.id, userId)
+        }));
+
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
+
+        // Prevent deleting admin users
+        if (user.permission === 1) {
+            throw new BadRequestError('Cannot delete admin users');
+        }
+
+        await profileAsync(c, 'user_delete', () => db.delete(users).where(eq(users.id, userId)));
+
+        return c.json({ success: true });
+    }, { format: 'json' }));
+
     return app;
 }

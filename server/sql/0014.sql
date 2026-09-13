@@ -1,0 +1,1 @@
+ALTER TABLE card_keys ADD COLUMN expiry_hours INTEGER DEFAULT 0 NOT NULL;

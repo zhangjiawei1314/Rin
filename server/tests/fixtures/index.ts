@@ -194,7 +194,9 @@ export function createMockEnv(overrides: Partial<Env> = {}): Env {
  * Clean up test database
  */
 export function cleanupTestDB(sqlite: Database) {
-    sqlite.close();
+    if (sqlite && typeof sqlite.close === 'function') {
+        sqlite.close();
+    }
 }
 
 // ============================================================================

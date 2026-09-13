@@ -11,6 +11,7 @@ import { SitemapService } from "../services/sitemap";
 import { BlobService, StorageService } from "../services/storage";
 import { TagService } from "../services/tag";
 import { UserService } from "../services/user";
+import { CardService } from "../services/cards";
 
 export function registerRoutes(app: RinApp) {
   app.get("/", (c) => c.text("Hi"));
@@ -25,6 +26,7 @@ export function registerRoutes(app: RinApp) {
   app.route("/friend", FriendService());
   app.route("/moments", MomentsService());
   app.route("/user", UserService());
+  app.route("/cards", CardService());
   app.route("/auth", PasswordAuthService());
   app.route("/config", ConfigService());
   app.route("/", RSSService());

@@ -145,6 +145,65 @@ export const UserStatus = {
 } as const;
 
 // ============================================================================
+// Card Key Types
+// ============================================================================
+
+export type CardKeyStatus = 'active' | 'frozen' | 'invalid' | 'expired';
+
+export interface CardKeyInfo {
+  id: number;
+  code: string;
+  status: CardKeyStatus;
+  note: string;
+  expiryHours: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: number | null;
+  activatedBy: number | null;
+  /** Moment the clock starts running; null while the card is still unclaimed. */
+  activatedAt: string | null;
+}
+
+export interface GenerateCardKeysRequest {
+  count?: number;
+  prefix?: string;
+  note?: string;
+  expiryHours?: number;
+}
+
+export interface GenerateCardKeysResponse {
+  success: boolean;
+  cards: CardKeyInfo[];
+}
+
+export interface UpdateCardStatusRequest {
+  status: CardKeyStatus;
+}
+
+export interface VerifyCardKeyRequest {
+  code: string;
+}
+
+export interface VerifyCardKeyResponse {
+  valid: boolean;
+  status: CardKeyStatus | null;
+  code: string | null;
+  message: string;
+  activatedAt: string | null;
+  expiresAt: string | null;
+}
+
+export interface ActivateCardKeyRequest {
+  code: string;
+}
+
+export interface ActivateCardKeyResponse {
+  success: boolean;
+  card?: CardKeyInfo;
+  message: string;
+}
+
+// ============================================================================
 // Auth Types
 // ============================================================================
 

@@ -141,6 +141,21 @@ export const cache = sqliteTable("cache", {
     typeKeyIdx: index("cache_type_key_idx").on(table.type, table.key),
 }));
 
+export const cardKeys = sqliteTable("card_keys", {
+    id: integer("id").primaryKey(),
+    code: text("code").notNull().unique(),
+    status: text("status").default("active").notNull(), // 'active' | 'frozen' | 'invalid' | 'expired'
+    note: text("note").default("").notNull(),
+    createdBy: integer("created_by").references(() => users.id),
+    activatedBy: integer("activated_by").references(() => users.id),
+    activatedAt: integer("activated_at", { mode: "timestamp" }),
+    expiryHours: integer("expiry_hours").default(0).notNull(),
+    createdAt: created_at,
+    updatedAt: updated_at,
+}, (table) => ({
+    codeIdx: index("card_keys_code_idx").on(table.code),
+}));
+
 export const feedsRelations = relations(feeds, ({ many, one }) => ({
     hashtags: many(feedHashtags),
     user: one(users, {

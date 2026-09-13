@@ -316,4 +316,50 @@ describe('UserService', () => {
             expect(res.status).toBe(401);
         });
     });
+
+    describe('DELETE /:id - Delete user', () => {
+        it('should allow admin to delete a normal user', async () => {
+            const res = await app.request('/1', {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer mock_token_2' }
+            }, env);
+
+            expect(res.status).toBe(200);
+            const data = await res.json() as any;
+            expect(data.success).toBe(true);
+
+            // Verify user was deleted from the mock database
+            const dbResult = sqlite.prepare(`SELECT * FROM users WHERE id = 1`).all() as any[];
+            expect(dbResult).toHaveLength(0);
+        });
+
+        it('should prevent non-admin from deleting user', async () => {
+            const res = await app.request('/1', {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer mock_token_1' }
+            }, env);
+
+            expect(res.status).toBe(401);
+        });
+
+        it('should return 404 for non-existent user', async () => {
+            const res = await app.request('/999', {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer mock_token_2' }
+            }, env);
+
+            expect(res.status).toBe(404);
+        });
+
+        it('should prevent deleting admin users', async () => {
+            const res = await app.request('/2', {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer mock_token_2' }
+            }, env);
+
+            expect(res.status).toBe(400);
+            const data = await res.json() as any;
+            expect(data.error.message).toBe('Cannot delete admin users');
+        });
+    });
 });

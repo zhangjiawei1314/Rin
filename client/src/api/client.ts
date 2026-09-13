@@ -35,6 +35,14 @@ import type {
   AuthStatus,
   LoginRequest,
   LoginResponse,
+  CardKeyInfo,
+  GenerateCardKeysRequest,
+  GenerateCardKeysResponse,
+  UpdateCardStatusRequest,
+  VerifyCardKeyRequest,
+  VerifyCardKeyResponse,
+  ActivateCardKeyRequest,
+  ActivateCardKeyResponse,
 } from "@rin/api";
 
 export interface SettingsConfigResponse {
@@ -159,6 +167,14 @@ export type {
   AuthStatus,
   LoginRequest,
   LoginResponse,
+  CardKeyInfo,
+  GenerateCardKeysRequest,
+  GenerateCardKeysResponse,
+  UpdateCardStatusRequest,
+  VerifyCardKeyRequest,
+  VerifyCardKeyResponse,
+  ActivateCardKeyRequest,
+  ActivateCardKeyResponse,
 } from "@rin/api";
 
 
@@ -394,6 +410,11 @@ class UserAPI {
     return this.http.put<{ success: boolean }>(`/api/user/freeze/${id}`, body);
   }
 
+  // DELETE /api/user/:id
+  async deleteUser(id: number): Promise<ApiResponse<{ success: boolean }>> {
+    return this.http.delete<{ success: boolean }>(`/api/user/${id}`);
+  }
+
   // POST /api/user/logout
   async logout(): Promise<ApiResponse<void>> {
     return this.http.post<void>("/api/user/logout");
@@ -402,6 +423,43 @@ class UserAPI {
   // GET /api/user/github
   githubAuth(): string {
     return `${endpoint}/api/user/github`;
+  }
+}
+
+/**
+ * Card Key API methods
+ */
+class CardAPI {
+  constructor(private http: HttpClient) {}
+
+  // GET /api/cards/list
+  async list(): Promise<ApiResponse<CardKeyInfo[]>> {
+    return this.http.get<CardKeyInfo[]>("/api/cards/list");
+  }
+
+  // POST /api/cards/generate
+  async generate(body: GenerateCardKeysRequest): Promise<ApiResponse<GenerateCardKeysResponse>> {
+    return this.http.post<GenerateCardKeysResponse>("/api/cards/generate", body);
+  }
+
+  // PUT /api/cards/:id/status
+  async updateStatus(id: number, body: UpdateCardStatusRequest): Promise<ApiResponse<{ success: boolean }>> {
+    return this.http.put<{ success: boolean }>(`/api/cards/${id}/status`, body);
+  }
+
+  // DELETE /api/cards/:id
+  async delete(id: number): Promise<ApiResponse<{ success: boolean }>> {
+    return this.http.delete<{ success: boolean }>(`/api/cards/${id}`);
+  }
+
+  // POST /api/cards/verify
+  async verify(body: VerifyCardKeyRequest): Promise<ApiResponse<VerifyCardKeyResponse>> {
+    return this.http.post<VerifyCardKeyResponse>("/api/cards/verify", body);
+  }
+
+  // POST /api/cards/activate
+  async activate(body: ActivateCardKeyRequest): Promise<ApiResponse<ActivateCardKeyResponse>> {
+    return this.http.post<ActivateCardKeyResponse>("/api/cards/activate", body);
   }
 }
 
@@ -674,6 +732,7 @@ export class ApiClient {
   tag: TagAPI;
   comment: CommentAPI;
   user: UserAPI;
+  card: CardAPI;
   friend: FriendAPI;
   moments: MomentsAPI;
   config: ConfigAPI;
@@ -690,6 +749,7 @@ export class ApiClient {
     this.tag = new TagAPI(this.http);
     this.comment = new CommentAPI(this.http);
     this.user = new UserAPI(this.http);
+    this.card = new CardAPI(this.http);
     this.friend = new FriendAPI(this.http);
     this.moments = new MomentsAPI(this.http);
     this.config = new ConfigAPI(this.http);
