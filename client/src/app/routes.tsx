@@ -16,6 +16,7 @@ import { FeedAdminPage } from '../page/newAdmin/Feed/index'
 import FeedEditPage from '../page/newAdmin/Feed/Edit'
 import { AdminSettingsPage } from "../page/newAdmin/Settings";
 import { UserAdminPage } from "../page/newAdmin/User";
+import { NavigationAdminPage } from "../page/newAdmin/Navigation";
 import { ErrorPage } from "../page/error";
 import { AntdProvider } from "../components/ui/antd-provider";
 import { FeedPage, TOCHeader } from "../page/feed";
@@ -118,6 +119,10 @@ export function AppRoutes() {
 
       <AntdRoute path="/admin/users" requirePermission>
         <UserAdminPage />
+      </AntdRoute>
+
+      <AntdRoute path="/admin/navigation" requirePermission>
+        <NavigationAdminPage />
       </AntdRoute>
 
       <AdminRoute path="/admin/queue-status" requirePermission title={t("queue_status.title")} description={t("admin.queue_status_description")}>

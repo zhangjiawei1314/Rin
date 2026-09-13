@@ -12,6 +12,8 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ReactNode } from 'react'
+import { client } from '../../app/runtime'
+import { removeAuthToken } from '../../utils/auth'
 
 const { Header, Content, Sider, Footer } = Layout
 
@@ -49,6 +51,10 @@ export function AntdAdminLayout({ children }: AntdAdminLayoutProps) {
           key: '/admin/tags',
           label: t('antd.menu.tags', '标签管理'),
         },
+        {
+          key: '/admin/navigation',
+          label: t('antd.menu.navigation', '导航栏页面'),
+        },
       ],
     },
     {
@@ -70,9 +76,14 @@ export function AntdAdminLayout({ children }: AntdAdminLayoutProps) {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: t('antd.menu.logout', '退出登录'),
-      onClick: () => {
-        // TODO: 实现退出登录逻辑
-        console.log('Logout')
+      onClick: async () => {
+        try {
+          await client.user.logout();
+        } catch (err) {
+          console.error('Logout API failed', err);
+        }
+        removeAuthToken();
+        window.location.reload();
       },
     },
   ]

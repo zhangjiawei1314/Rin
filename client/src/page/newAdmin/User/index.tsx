@@ -18,11 +18,12 @@ export function UserAdminPage() {
   const [generatePrefix, setGeneratePrefix] = useState('')
   const [generateNote, setGenerateNote] = useState('')
   const [generateExpiryHours, setGenerateExpiryHours] = useState(0)
-  const [verifyCode, setVerifyCode] = useState('')
+  // Verification and activation share one code field — the tab shows the
+  // card state first, then lets you claim it without re-typing.
+  const [cardCode, setCardCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [verifyResult, setVerifyResult] = useState<VerifyCardKeyResponse | null>(null)
   const [modalVisible, setModalVisible] = useState(false)
-  const [activateCode, setActivateCode] = useState('')
   const [activating, setActivating] = useState(false)
   const [activateResult, setActivateResult] = useState<ActivateCardKeyResponse | null>(null)
 
@@ -89,14 +90,15 @@ export function UserAdminPage() {
   }
 
   const handleVerify = async () => {
-    if (!verifyCode.trim()) {
+    if (!cardCode.trim()) {
       message.warning('请输入卡密')
       return
     }
     setVerifying(true)
     setVerifyResult(null)
+    setActivateResult(null)
     try {
-      const { data, error } = await client.card.verify({ code: verifyCode.trim() })
+      const { data, error } = await client.card.verify({ code: cardCode.trim() })
       if (!error && data) {
         setVerifyResult(data)
       } else {
@@ -136,17 +138,19 @@ export function UserAdminPage() {
   }
 
   const handleActivate = async () => {
-    if (!activateCode.trim()) {
+    if (!cardCode.trim()) {
       message.warning('请输入卡密')
       return
     }
     setActivating(true)
     setActivateResult(null)
     try {
-      const { data, error } = await client.card.activate({ code: activateCode.trim() })
+      const { data, error } = await client.card.activate({ code: cardCode.trim() })
       if (!error && data) {
         setActivateResult(data)
-        // Refresh the list so 创建人/激活人 and the new expiry reflect immediately.
+        // The card state just changed, so drop the stale verify panel and
+        // refresh the list so 创建人/激活人 and the new expiry reflect it.
+        setVerifyResult(null)
         fetchCards()
       } else {
         message.error(error?.value || '激活失败')
@@ -457,17 +461,23 @@ export function UserAdminPage() {
               )
             },
             {
-              key: 'verify',
-              label: '卡密验证',
+              key: 'card',
+              label: '卡密验证/激活',
               children: (
                 <div style={{ maxWidth: 600 }}>
-                  <h3 style={{ marginBottom: 16 }}>卡密验证</h3>
-                  <p style={{ color: '#888', marginBottom: 16 }}>输入卡密编码，验证其有效性和状态。</p>
+                  <h3 style={{ marginBottom: 16 }}>卡密验证 / 激活</h3>
+                  <p style={{ color: '#888', marginBottom: 16 }}>
+                    输入卡密编码后先验证其状态；确认可用再激活（每张卡密仅可激活一次）。
+                  </p>
                   <Space.Compact style={{ width: '100%', marginBottom: 24 }}>
                     <Input
                       placeholder="请输入卡密编码"
-                      value={verifyCode}
-                      onChange={(e) => setVerifyCode(e.target.value)}
+                      value={cardCode}
+                      onChange={(e) => {
+                        setCardCode(e.target.value)
+                        setVerifyResult(null)
+                        setActivateResult(null)
+                      }}
                       onPressEnter={handleVerify}
                       prefix={<SearchOutlined />}
                       size="large"
@@ -480,9 +490,20 @@ export function UserAdminPage() {
                     >
                       验证
                     </Button>
+                    <Button
+                      size="large"
+                      onClick={handleActivate}
+                      loading={activating}
+                      // A card can only be claimed once, so there is nothing to
+                      // activate until a verify confirms it is valid and unclaimed.
+                      disabled={!verifyResult?.valid || !!verifyResult.activatedAt}
+                    >
+                      激活
+                    </Button>
                   </Space.Compact>
                   {verifyResult && (
                     <Alert
+                      style={{ marginBottom: activateResult ? 16 : 0 }}
                       type={verifyResult.valid ? 'success' : 'error'}
                       showIcon
                       message={verifyResult.valid ? '卡密有效' : '卡密无效'}
@@ -511,34 +532,6 @@ export function UserAdminPage() {
                       }
                     />
                   )}
-                </div>
-              )
-            },
-            {
-              key: 'activate',
-              label: '激活卡密',
-              children: (
-                <div style={{ maxWidth: 600 }}>
-                  <h3 style={{ marginBottom: 16 }}>激活卡密</h3>
-                  <p style={{ color: '#888', marginBottom: 16 }}>输入卡密编码，激活该卡密（每张卡密仅可激活一次）。</p>
-                  <Space.Compact style={{ width: '100%', marginBottom: 24 }}>
-                    <Input
-                      placeholder="请输入卡密编码"
-                      value={activateCode}
-                      onChange={(e) => setActivateCode(e.target.value)}
-                      onPressEnter={handleActivate}
-                      prefix={<SearchOutlined />}
-                      size="large"
-                    />
-                    <Button
-                      type="primary"
-                      size="large"
-                      onClick={handleActivate}
-                      loading={activating}
-                    >
-                      激活
-                    </Button>
-                  </Space.Compact>
                   {activateResult && (
                     <Alert
                       type={activateResult.success ? 'success' : 'error'}
